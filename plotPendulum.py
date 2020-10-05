@@ -28,6 +28,6 @@ fig = plt.gcf()
 axes = fig.gca()
 axes.set_ylim([-1, 1])
 
-plt.xlabel('Tiempo (s)')
-plt.ylabel('Poscion de pendulo (m)')
+plt.xlabel('Tiempo (s)', fontsize=18)
+plt.ylabel('Poscion de pendulo (m)', fontsize=18)
 plt.show()
