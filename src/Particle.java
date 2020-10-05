@@ -65,8 +65,12 @@ public class Particle implements Comparable<Particle>{
         this.vy = vy;
     }
 
-    public double getDistance(Particle p) {
+    public double getDistanceWithRadius(Particle p) {
         return Math.sqrt(Math.pow(x - p.getX(),2) + Math.pow(y - p.getY(),2)) - radius - p.getRadius();
+    }
+
+    public double getDistance(Particle p) {
+        return Math.sqrt(Math.pow(x - p.getX(),2) + Math.pow(y - p.getY(),2));
     }
 
 	@Override

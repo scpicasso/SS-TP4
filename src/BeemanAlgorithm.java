@@ -22,20 +22,17 @@ public class BeemanAlgorithm {
 		this.prev_a = getAcceleration(r - delta_t*v, v - delta_t*a);
 		this.g_constant = g_constant;
 		this.k_constant = k_constant;
-
 	}
 
 	public void updateParticle() {
-		
 			double new_r = getNewPosition();
 			double new_v = getNewVelocity(new_r);
 			this.r = new_r;
 			this.v = new_v;
 			this.prev_a = a;
 			this.a = getAcceleration(r, v);
-			particle.setX(new_r);
-			particle.setVelocityX(new_v);
-		
+			particle.setX(r);
+			particle.setVelocityX(v);	
 
 	}
 
@@ -44,9 +41,8 @@ public class BeemanAlgorithm {
 	}
 
 	public double getNewVelocity(double new_r) {
-		double v_pred = v + (3/2)*a*delta_t - (1/2)*prev_a*delta_t;
-		double a_pred = getAcceleration(new_r, v_pred);
-		return (v + (1/6)*delta_t*(2*a_pred + 5*a - prev_a));
+		double acc = -(k_constant*new_r)/particle.getMass();
+		return (v + delta_t*(2*acc + 5*a - prev_a)/6);
 	}
 
 	public double getAcceleration(double position, double velocity) {

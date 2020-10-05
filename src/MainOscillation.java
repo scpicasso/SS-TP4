@@ -30,7 +30,7 @@ public class MainOscillation  {
 		results[0] = new ArrayList<Double>(); 
 		results[1] = new ArrayList<Double>();
 
-		SimSystem system = new SimSystem(particles, delta_t, k_constant, g_constant);
+		SimSystem system = new SimSystem(particles, delta_t, k_constant, g_constant, amplitude);
 		system.addAlgorithm(algorithm);
 
 		int index = 0;
