@@ -1,4 +1,3 @@
-package src;
 
 import java.util.*;
 import java.util.List;
@@ -10,6 +9,7 @@ public class SimSystem {
 	List<BeemanAlgorithm> beeman;
 	List<GearAlgorithm> gear;
 	List<OscillationAlgorithm> osc;
+	List<VelocityVerletAlgorithm> verlet;
 	double delta_t;
 	double k_constant;
 	double g_constant;
@@ -24,7 +24,7 @@ public class SimSystem {
 		this.beeman = new ArrayList<>();
 		this.gear = new ArrayList<>();
 		this.osc = new ArrayList<>();
-
+		this.verlet = new ArrayList<>();
 	}
 
 	public void updateParticles() {
@@ -36,6 +36,9 @@ public class SimSystem {
 		}
 		for(OscillationAlgorithm o : osc) {
 			o.updateParticle();
+		}
+		for(VelocityVerletAlgorithm v : verlet) {
+			v.updateParticle();
 		}
 	}
 
@@ -57,6 +60,9 @@ public class SimSystem {
 				}
 				break;
 			case "V":
+				for(Particle p:particles) {
+					verlet.add(new VelocityVerletAlgorithm(p, delta_t, g_constant, k_constant));
+				}
 				return;
 		}
 	}
