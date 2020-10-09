@@ -1,3 +1,4 @@
+package src;
 
 public class Particle implements Comparable<Particle>{
 	
@@ -70,6 +71,10 @@ public class Particle implements Comparable<Particle>{
 
     public double getDistance(Particle p) {
         return Math.sqrt(Math.pow(x - p.getX(),2) + Math.pow(y - p.getY(),2));
+    }
+
+    public double getElasticAcceleration(double position, double k_constant, double g_constant, double velocity) {
+        return -(k_constant*position + g_constant*velocity)/mass;
     }
 
 	@Override

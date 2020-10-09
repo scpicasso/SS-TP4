@@ -1,3 +1,4 @@
+package src;
 
 import java.util.*;
 
@@ -17,8 +18,8 @@ public class BeemanAlgorithm {
 		this.delta_t = delta_t;
 		this.r = particle.getX();
 		this.v = particle.getVelocityX();
-		this.a = getAcceleration(r, v);
-		this.prev_a = getAcceleration(r - delta_t*v, v - delta_t*a);
+		this.a = particle.getElasticAcceleration(r, k_constant, g_constant, v);
+		this.prev_a = particle.getElasticAcceleration(r - delta_t*v, k_constant, g_constant, v - delta_t*a);
 		this.g_constant = g_constant;
 		this.k_constant = k_constant;
 	}
@@ -29,7 +30,7 @@ public class BeemanAlgorithm {
 			this.r = new_r;
 			this.v = new_v;
 			this.prev_a = a;
-			this.a = getAcceleration(r, v);
+			this.a = particle.getElasticAcceleration(r, k_constant, g_constant, v);
 			particle.setX(r);
 			particle.setVelocityX(v);	
 
@@ -40,12 +41,9 @@ public class BeemanAlgorithm {
 	}
 
 	public double getNewVelocity(double new_r) {
-		double acc = -(k_constant*new_r)/particle.getMass();
+		double acc = particle.getElasticAcceleration(new_r, k_constant, g_constant, v);
 		return (v + delta_t*(2*acc + 5*a - prev_a)/6);
 	}
 
-	public double getAcceleration(double position, double velocity) {
-		return -(k_constant*position + g_constant*velocity)/particle.getMass();
-	}
 
 }

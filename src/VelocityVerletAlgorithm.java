@@ -1,3 +1,4 @@
+package src;
 
 public class VelocityVerletAlgorithm {
 	private Particle particle;
@@ -13,7 +14,7 @@ public class VelocityVerletAlgorithm {
 		this.delta_t = delta_t;
 		this.r = particle.getX();
 		this.v = particle.getVelocityX();
-		this.a = getAcceleration(r, v);
+		this.a = particle.getElasticAcceleration(r, k_constant, g_constant, v);
 		this.g_constant = g_constant;
 		this.k_constant = k_constant;
 	}
@@ -23,7 +24,7 @@ public class VelocityVerletAlgorithm {
 			double new_v = getNewVelocity(new_r);
 			this.r = new_r;
 			this.v = new_v;
-			this.a = getAcceleration(r, v);
+			this.a = particle.getElasticAcceleration(r, k_constant, g_constant, v);
 			particle.setX(r);
 			particle.setVelocityX(v);	
 	}
@@ -35,13 +36,10 @@ public class VelocityVerletAlgorithm {
 	public double getNewVelocity(double new_r) {
 	
 		double vdt_2 = v + a*delta_t/2;
-		double adt = getAcceleration(new_r, v);
+		double adt = particle.getElasticAcceleration(new_r, k_constant, g_constant, v);
 		
 		return (vdt_2 + delta_t*adt/2);
 		
 	}
 
-	public double getAcceleration(double position, double velocity) {
-		return -(k_constant*position + g_constant*velocity)/particle.getMass();
-	}
 }

@@ -1,3 +1,4 @@
+package src;
 
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
@@ -32,23 +33,18 @@ public class MainOscillation  {
 		SimSystem system = new SimSystem(particles, delta_t, k_constant, g_constant, amplitude);
 		system.addAlgorithm(algorithm);
 
-		int index = 0;
 		int round = 0;
 		double print_time = 0.0025;
 
 		while(current_time < tf) {
-			if(current_time >= print_time*index) {
-				results[1].add(particles.get(0).getX()); 
-				results[0].add(print_time*index);
-				index ++;
-			}
-
+			results[1].add(particles.get(0).getX()); 
+			results[0].add(current_time);
 			system.updateParticles();
 			round ++;
 			current_time = delta_t*round;
 		}
 
-		printOutput(results, index, args[0], args[1]);
+		printOutput(results, round, args[0], args[1]);
 	}
 
 	public static void printOutput(ArrayList<Double>[]  results, int index, String delta, String al) throws UnsupportedEncodingException, FileNotFoundException, IOException {

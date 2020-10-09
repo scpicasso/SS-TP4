@@ -1,148 +1,172 @@
+package src;
 
 import java.util.*;
 
 public class GearSpaceAlgorithm {
 
-	private double delta_t;
-	private double G_constant = 6.674*Math.pow(10,-20);
-	private List<Double[][]> values = new ArrayList<Double[][]>();
-	private List<Particle> ps;
-	private double coefficients[] = {3/16, 251/360, 1, 11/18, 1/6, 1/60};
-
-	//first derivative = position
-	//second derivative = velocity
-	//third derivative = acceleration
-	public GearSpaceAlgorithm(List<Particle> ps, double delta_t){
-		this.delta_t = delta_t;
-		this.ps = ps;
-		int j = 0;
-		for(Particle p:ps) {
-			values.add(new Double[2][6]);
-			values.get(j)[0][0] = p.getX();
-			values.get(j)[0][1] = p.getVelocityX();
-			values.get(j)[0][2] = getAccelerationX(j, values);
-			for(int i = 3; i < 6; i++) {
-				values.get(j)[0][i] = 0.0;
-			}
-			values.get(j)[1][0] = p.getY();
-			values.get(j)[1][1] = p.getVelocityY();
-			values.get(j)[1][2] = getAccelerationY(j, values);
-			for(int i = 3; i < 6; i++) {
-				values.get(j)[1][i] = 0.0;
-			}
-			j++;
-		}
-
-	}
-
-	public void updateParticles() {
-		List<Double[][]> new_values = makePredictions();
-		
-		for(int j = 0; j < ps.size(); j++) {
-			for(int i = 0; i<2; i++) {
-				double acceleration;
-
-				if(i == 0) 
-					acceleration = getAccelerationX(j, new_values);
-				else
-					acceleration = getAccelerationY(j, new_values);
-				
-				double delta_R2 = (acceleration - new_values.get(j)[i][2])*Math.pow(delta_t, 2)/2;
-
-				for(int k=0; k<6; k++) {
-					values.get(j)[i][k] = new_values.get(j)[i][k] + (delta_R2*coefficients[k]*factorial(k))/Math.pow(delta_t,k);
-				}
-			}
-
-			ps.get(j).setX(values.get(j)[0][0]);
-			ps.get(j).setY(values.get(j)[1][0]);
-			ps.get(j).setVelocityX(values.get(j)[0][1]);
-			ps.get(j).setVelocityY(values.get(j)[1][1]);
-		}
-	}
+    private static final int X = 0;
+    private static final int Y = 1;
+    private double coefficients[] = {3.0/20.0, 251.0/360.0, 1.0, 11.0/18.0, 1.0/6.0, 1.0/60.0};
+    private static final double G_constant = 6.674e-20;
 
 
-	public double factorial(int num) {
-		int base = 1;
-		for(int j = 2; j<=num; j++) {
-			base *= j;
-		}
-		return base;
-	}
+    private double[][][] values;
 
-	public double getAccelerationX(int id, List<Double[][]> matrix) {
-		double total = 0;
+    private List<Particle> particles;
+    private double delta_t;
+    
 
-		for(int j = 0; j<ps.size(); j++) {
-			if(j != id) {
-				double d_x = matrix.get(id)[0][0] - matrix.get(j)[0][0];
-				double d_y = matrix.get(id)[1][0] - matrix.get(j)[1][0];
+    public GearSpaceAlgorithm(List<Particle> particles, double delta_t) {
+        this.particles = particles;
+        this.delta_t = delta_t;
+        this.values = new double[particles.size()][2][6];
 
-				double dist = Math.pow(d_x,2) + Math.pow(d_y,2);
+        for (Particle p : particles) {
+            int index = p.getId() - 1;
 
-				total += (ps.get(j).getMass()*d_x) / Math.pow(dist, 1.5);
-			}
-		}
+            values[index][X][0] = p.getX();
+            values[index][Y][0] = p.getY();
+            values[index][X][1] = p.getVelocityX();
+            values[index][Y][1] = p.getVelocityY();
 
-		return total*G_constant;
+            for(int i = 3; i<6; i++) {
+                values[index][X][i] = 0;
+                values[index][Y][i] = 0;
 
-	}
+            }
 
-	public double getAccelerationY(int id, List<Double[][]> matrix) {
-		double total = 0;
+        }
 
-		for(int j = 0; j<ps.size(); j++) {
-			if(j != id) {
-				double d_x = matrix.get(id)[0][0] - matrix.get(j)[0][0];
-				double d_y = matrix.get(id)[1][0] - matrix.get(j)[1][0];
+        for (Particle p : particles) {
+            int index = p.getId() - 1;
+            values[index][X][2] = getAccelerationX(values, index);
+            values[index][Y][2] = getAccelerationY(values, index);
+        }
+    }
 
-				double dist = Math.pow(d_x,2) + Math.pow(d_y,2);
+    public void updateParticles() {
+        double[][][] new_values = makePredictions();
 
-				total += (ps.get(j).getMass()*d_y) / Math.pow(dist, 1.5);
-			}
-		}
+        for (Particle p : particles) {
+            int index = p.getId() - 1;
 
-		return total*G_constant;
+            for (int i = 0; i<=Y; i++) {
+                
+                double a;
 
-	}
+                if(i == X) {
+                    a = getAccelerationX(values, index);
+                }
 
-	public List<Double[][]> makePredictions() {
-		List<Double[][]> new_values = new ArrayList<Double[][]>();
+                else {
+                    a = getAccelerationY(values, index);
+                }
+                
+                double deltaR2 = (a - new_values[index][i][2]) * Math.pow(delta_t, 2)*0.5;
 
-		for(int j = 0; j<ps.size(); j++) {
-			new_values.add(new Double[2][6]);
+                for(int j = 0; j < 6; j++) {
+                    values[index][i][j] = new_values[index][i][j] + deltaR2*coefficients[j]*factorial(j)/Math.pow(delta_t, j);
+                }
+            }
 
-			for(int i = 0; i<2; i++) {
-				new_values.get(j)[i][0] = values.get(j)[i][0] +
-				values.get(j)[i][1]*delta_t +
-				values.get(j)[i][2]*Math.pow(delta_t, 2)/2 +
-				values.get(j)[i][3]*Math.pow(delta_t, 3)/6 +
-				values.get(j)[i][4]*Math.pow(delta_t, 4)/24 +
-				values.get(j)[i][5]*Math.pow(delta_t, 5)/120;
+            p.setX(values[index][X][0]);
+            p.setY(values[index][Y][0]);
+            
+            p.setVelocityX(values[index][X][1]);
+            p.setVelocityY(values[index][Y][1]);
+        }
+    }
 
-				new_values.get(j)[i][1] = values.get(j)[i][1] +
-				values.get(j)[i][2]*delta_t +
-				values.get(j)[i][3]*Math.pow(delta_t, 2)/2 +
-				values.get(j)[i][4]*Math.pow(delta_t, 3)/6 +
-				values.get(j)[i][5]*Math.pow(delta_t, 4)/24;
+    public double getAccelerationX(double[][][] matrices, int num) {
+        double a = 0;
 
-				new_values.get(j)[i][2] = values.get(j)[i][2] +
-				values.get(j)[i][3]*delta_t +
-				values.get(j)[i][4]*Math.pow(delta_t, 2)/2 +
-				values.get(j)[i][5]*Math.pow(delta_t, 3)/6;
+        for (Particle p : particles) {
+            int index = p.getId() -1;
 
-				new_values.get(j)[i][3] = values.get(j)[i][3] +
-				values.get(j)[i][4]*delta_t +
-				values.get(j)[i][5]*Math.pow(delta_t, 2)/2 ;
+            if (index != num) {
+                double d_x = matrices[index][X][0] - matrices[num][X][0];
+                double d_y = matrices[index][Y][0] - matrices[num][Y][0];
 
-				new_values.get(j)[i][4] = values.get(j)[i][4] +
-				values.get(j)[i][5]*delta_t;
+                double dist = Math.sqrt(d_x*d_x + d_y*d_y);
 
-				new_values.get(j)[i][5] = values.get(j)[i][5];
-			}
-		}
-		return new_values;
-	}
+                a += p.getMass() * d_x / Math.pow(dist, 3);
+
+            }
+        }
+
+        return G_constant * a;
+    }
+
+    public double getAccelerationY(double[][][] matrices, int num) {
+        double a = 0;
+
+        for (Particle p : particles) {
+            int index = p.getId() -1;
+
+            if (index != num) {
+                double d_x = matrices[index][X][0] - matrices[num][X][0];
+                double d_y = matrices[index][Y][0] - matrices[num][Y][0];
+
+                double dist = Math.sqrt(d_x*d_x + d_y*d_y);
+
+                a += p.getMass() * d_y / Math.pow(dist, 3);
+            }
+        }
+
+        return G_constant * a;
+    }
+
+    public double factorial(int num) {
+        int base = 1;
+        for(int i = 2; i <= num; i++) {
+            base = base * i;
+        }
+        return base;
+    }
+
+    public double[][][] makePredictions() {
+        double[][][] new_values = new double[particles.size()][2][6];
+
+        for (Particle p : particles) {
+            int index = p.getId() - 1;
+
+            for (int j = 0; j<=Y; j++) {
+                new_values[index][j][0] = 
+                    values[index][j][0] +
+                    values[index][j][1] * delta_t +
+                    values[index][j][2] * Math.pow(delta_t, 2)/(2) +
+                    values[index][j][3] * Math.pow(delta_t, 3)/factorial(3) +
+                    values[index][j][4] * Math.pow(delta_t, 4)/factorial(4) +
+                    values[index][j][5] * Math.pow(delta_t, 5)/factorial(5);
+
+                new_values[index][j][1] = 
+                    values[index][j][1] +
+                    values[index][j][2] * delta_t +
+                    values[index][j][3] * Math.pow(delta_t, 2)/(2) +
+                    values[index][j][4] * Math.pow(delta_t, 3)/factorial(3) +
+                    values[index][j][5] * Math.pow(delta_t, 4)/factorial(4);
+
+                new_values[index][j][2] = 
+                    values[index][j][2] +
+                    values[index][j][3] * delta_t +
+                    values[index][j][4] * Math.pow(delta_t, 2)/(2) +
+                    values[index][j][5] * Math.pow(delta_t, 3)/factorial(3);
+
+                new_values[index][j][3] = 
+                    values[index][j][3] +
+                    values[index][j][4] * delta_t +
+                    values[index][j][5] * Math.pow(delta_t, 2)/(2);
+
+                new_values[index][j][4] = 
+                    values[index][j][4] +
+                    values[index][j][5] * delta_t;
+
+                new_values[index][j][5] = 
+                    values[index][j][5];
+            }
+        }
+
+        return new_values;
+    }
 
 }
-
