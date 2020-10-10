@@ -22,11 +22,12 @@ public class MainSpace  {
 		double G_constant = 100;
 		double delta_t = Math.pow(10, Integer.valueOf(args[0]));
 		List<Particle> particles = new ArrayList<>();
+		boolean blast_off = false;
+		double ship_v = Double.valueOf(args[1]);
 		
 		Particle sun = new Particle(1, 0, 0, 0, 0, 1.989e+30, 696340);
 		Particle earth = new Particle(2, 1.493188929636662E+08, 1.318936357931255E+07, -3.113279917782445, 2.955205189256462E+01, 5.972e+24, 6371);
 		Particle mars = new Particle(3, 2.059448551842169E+08, 4.023977946528339E+07, -3.717406842095575, 2.584914078301731E+01, 6.39e+23, 3389.5);
-		Particle ship = new Particle(4, 0, 0, 0, 0, 5e+05, 0);
 		particles.add(sun);
 		particles.add(earth);
 		particles.add(mars);
@@ -44,23 +45,26 @@ public class MainSpace  {
 				printOutput(particles, printed, current_time);
 				printed ++;
 			}
+			if(current_time > year/4 && !blast_off) {
+				system.addSpaceship(ship_v);
+				blast_off = true;
+			}
 
 			system.updateParticles();
 			round ++;
 			current_time = delta_t*round;
 		}
 
-		printDOutput(particles, printed, current_time);
 	}
 
 	public static void printOutput(List<Particle> particles, int index, double time) throws UnsupportedEncodingException, FileNotFoundException, IOException {
 		
 		try (Writer writer = new BufferedWriter(new OutputStreamWriter( new FileOutputStream("output" + index + ".txt"), "utf-8"))) {
-			writer.write("3\n");
+			writer.write(String.valueOf(particles.size()) + "\n");
 			writer.write(String.valueOf(time) + "\n");
 			for(Particle p : particles) {
 				if(p.getId() != 1)
-					writer.write(String.valueOf(p.getX()) + " " + String.valueOf(p.getY()) + " " + String.valueOf(p.getRadius()*100) + "\n");
+					writer.write(String.valueOf(p.getX()) + " " + String.valueOf(p.getY()) + " " + String.valueOf(p.getRadius()*50) + "\n");
 				else
 					writer.write(String.valueOf(p.getX()) + " " + String.valueOf(p.getY()) + " " + String.valueOf(p.getRadius()) + "\n");
 			}  		

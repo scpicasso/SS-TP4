@@ -16,32 +16,65 @@ public class GearSpaceAlgorithm {
     private double delta_t;
     
 
-    public GearSpaceAlgorithm(List<Particle> particles, double delta_t) {
+    public GearSpaceAlgorithm(List<Particle> particles, double delta_t, GearSpaceAlgorithm old_gs) {
         this.particles = particles;
         this.delta_t = delta_t;
         this.values = new double[particles.size()][2][6];
 
-        for (Particle p : particles) {
-            int index = p.getId() - 1;
+        if(old_gs == null) {
+            for (Particle p : particles) {
+                int index = p.getId() - 1;
 
-            values[index][X][0] = p.getX();
-            values[index][Y][0] = p.getY();
-            values[index][X][1] = p.getVelocityX();
-            values[index][Y][1] = p.getVelocityY();
+                values[index][X][0] = p.getX();
+                values[index][Y][0] = p.getY();
+                values[index][X][1] = p.getVelocityX();
+                values[index][Y][1] = p.getVelocityY();
 
-            for(int i = 3; i<6; i++) {
-                values[index][X][i] = 0;
-                values[index][Y][i] = 0;
+                for(int i = 3; i<6; i++) {
+                    values[index][X][i] = 0;
+                    values[index][Y][i] = 0;
+
+                }
 
             }
 
+            for (Particle p : particles) {
+                int index = p.getId() - 1;
+                values[index][X][2] = getAccelerationX(values, index);
+                values[index][Y][2] = getAccelerationY(values, index);
+            }
         }
 
-        for (Particle p : particles) {
-            int index = p.getId() - 1;
-            values[index][X][2] = getAccelerationX(values, index);
-            values[index][Y][2] = getAccelerationY(values, index);
+        else {
+            double [][][] old_values = old_gs.getValues();
+            for(Particle p : particles) {
+                int index = p.getId() - 1;
+                if(index != particles.size() - 1) {
+                    for(int i = 0; i<6; i++) {
+                        values[index][X][i] = old_values[index][X][i];
+                        values[index][Y][i] = old_values[index][Y][i];
+                    }
+
+                }
+                else {
+                    values[index][X][0] = p.getX();
+                    values[index][Y][0] = p.getY();
+                    values[index][X][1] = p.getVelocityX();
+                    values[index][Y][1] = p.getVelocityY();
+                    values[index][X][2] = getAccelerationX(values, index);
+                    values[index][Y][2] = getAccelerationY(values, index);
+
+                    for(int i = 3; i<6; i++) {
+                        values[index][X][i] = 0;
+                        values[index][Y][i] = 0;
+                    }
+                }
+            }
         }
+    }
+
+    public double[][][] getValues() {
+        return values;
     }
 
     public void updateParticles() {
