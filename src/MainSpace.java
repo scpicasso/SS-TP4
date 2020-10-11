@@ -1,4 +1,3 @@
-package src;
 
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
@@ -14,6 +13,7 @@ public class MainSpace  {
 
 	static final double year = 365*24*60*60;
 	static final double week = 7*24*60*60;
+	static final double day = 24*60*60;
 
 	//Particle: int id, double x, double y, double vx, double vy, double mass, double radius
 	//in km/s
@@ -39,22 +39,53 @@ public class MainSpace  {
 		int round = 0;
 		int printed = 0;
 		double print_time = week;
+		double max_sim_time = year*5;
+		
+		try (Writer writer = new BufferedWriter(new OutputStreamWriter( new FileOutputStream("minDistance.txt"), "utf-8"))) {
+			
+			for (int departure_time = 0; departure_time < year*2; departure_time += day) {
+				
+				current_time = 0.0;
+			
+				while(current_time <= max_sim_time /*numero arbitrario como cota superior*/) {
 
-		while(current_time <= year) {
-			if(printed*print_time <= current_time) {
-				printOutput(particles, printed, current_time);
-				printed ++;
+					if(current_time >= departure_time && !blast_off) {
+						system.addSpaceship(ship_v);
+						blast_off = true;
+					}
+		
+					system.updateParticles();
+					
+					// habria que cheuqear si llego a la orbita
+					if (particles.get(1).getDistanceWithRadius(particles.get(2)) <= 0) {
+						System.out.println("LLEGO");
+						break;
+					}
+					round ++;
+					current_time = delta_t*round;
+				}
+				
+				printTimeToArribeOutput(particles, current_time, departure_time, writer); 
 			}
-			if(current_time > year/4 && !blast_off) {
-				system.addSpaceship(ship_v);
-				blast_off = true;
-			}
-
-			system.updateParticles();
-			round ++;
-			current_time = delta_t*round;
-		}
-
+		}		
+		
+		
+//		while(current_time <= year) {
+//			
+//			if(printed*print_time <= current_time) {
+//				printOutput(particles, printed, current_time);
+//				printed ++;
+//			}
+//			
+//			if(current_time > year/4 && !blast_off) {
+//				system.addSpaceship(ship_v);
+//				blast_off = true;
+//			}
+//
+//			round ++;
+//			current_time = delta_t*round;
+//		}
+		
 	}
 
 	public static void printOutput(List<Particle> particles, int index, double time) throws UnsupportedEncodingException, FileNotFoundException, IOException {
@@ -72,7 +103,7 @@ public class MainSpace  {
 		return;			    	
 	}
 
-		public static void printDOutput(List<Particle> particles, int index, double time) throws UnsupportedEncodingException, FileNotFoundException, IOException {
+	public static void printDOutput(List<Particle> particles, int index, double time) throws UnsupportedEncodingException, FileNotFoundException, IOException {
 		
 		try (Writer writer = new BufferedWriter(new OutputStreamWriter( new FileOutputStream("a" + index + ".txt"), "utf-8"))) {
 			writer.write("3\n");
@@ -82,6 +113,13 @@ public class MainSpace  {
 			double d_mars = sun.getDistanceWithRadius(particles.get(2));
 			writer.write(String.valueOf(d_earth) + " " + String.valueOf(d_mars) + "\n");  		
 		}
+		return;			    	
+	}
+	
+	public static void printTimeToArribeOutput(List<Particle> particles, double journey_time, double departure_time, Writer writer) throws UnsupportedEncodingException, FileNotFoundException, IOException {
+		Particle earth = particles.get(1);
+		Particle mars = particles.get(2);
+		writer.write(String.valueOf(departure_time) + " " + String.valueOf(journey_time) + "\n");
 		return;			    	
 	}
 
